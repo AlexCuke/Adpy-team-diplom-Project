@@ -1,5 +1,14 @@
-# Adpy-team-diplom-Project
+# VKinder — Бот для знакомств
 
-**Required environment variables:**
+Программа для поиска людей в VK на основе данных профиля пользователя.
 
-- VK_GROUP_TOKEN — Токен VK для группы
+## Требования
+- Python 3.10+
+- PostgreSQL
+
+## Настройка
+1. Создайте файл `.env` на основе примера:
+   ```env
+   VK_GROUP_TOKEN=токен_сообщества
+   VK_AUTH_TOKEN=ваш_личный_токен_загруженный_по_инструкции
+   DATABASE_URL=postgresql://логин:пароль@localhost:5432/имя_бд

@@ -24,31 +24,38 @@ class VkHandler:
         return info
 
     def search_people(self, user_info, offset=0):
-        # Определение пола (если 2(муж), то ищем 1(жен) и наоборот)
+        # Определение пола (ищем противоположный)
         search_sex = 1 if user_info.get('sex') == 2 else 2
         
-        # Получаем ID города (если нет, по дефолту Москва - 1)
-        city_id = user_info.get('city', {}).get('id', 1)
+        # Получаем ID города (если в профиле нет, по умолчанию Москва - 1)
+        city_data = user_info.get('city')
+        city_id = city_data.get('id') if city_data else 1
         
-        # Получаем возраст (если нет, ставим 20-30 лет)
+        # Получаем возраст
         age = user_info.get('age')
-        age_from = age - 2 if age else 20
-        age_to = age + 2 if age else 30
+        age_from = age - 3 if age else 20
+        age_to = age + 3 if age else 30
         
+        print(f"--- Параметры поиска ---")
+        print(f"Пол: {search_sex}, Город ID: {city_id}, Возраст: {age_from}-{age_to}")
+
         try:
             res = self.user_vk.method('users.search', {
-                'city': city_id,
+                'city': city_id,           # ТЕПЕРЬ ПЕРЕДАЕМ ГОРОД
                 'sex': search_sex,
-                'status': 6, # В активном поиске
                 'age_from': age_from,
                 'age_to': age_to,
                 'has_photo': 1,
                 'count': 30,
                 'offset': offset,
-                'fields': 'is_closed, can_access_closed'
+                'fields': 'is_closed, can_access_closed',
+                'v': '5.199'
             })
+            items = res.get('items', [])
             # Оставляем только открытые профили
-            return [p for p in res.get('items', []) if not p.get('is_closed')]
+            results = [p for p in items if not p.get('is_closed')]
+            print(f"Найдено анкет: {len(results)}")
+            return results
         except Exception as e:
             print(f"Ошибка поиска: {e}")
             return []
@@ -61,8 +68,6 @@ class VkHandler:
                 'extended': 1
             })
             photos = res.get('items', [])
-            
-            # Сортировка по лайкам
             sorted_photos = sorted(
                 photos, 
                 key=lambda x: x['likes']['count'], 
